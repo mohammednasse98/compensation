@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Outage & Usage — استهلاك وتعويض</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/jquery-datetimepicker@2.5.20/build/jquery.datetimepicker.full.min.js"></script>
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background: #f4f8fc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center
+    }
+
+    .wrap {
+      width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06)
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: #0b74e1;
+      text-align: center
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 700;
+      text-align: right
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d7e7fb;
+      box-sizing: border-box
+    }
+
+    .btn {
+      background: #0b74e1;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 14px
+    }
+
+    th,
+    td {
+      border: 1px solid #e8f1fb;
+      padding: 8px;
+      text-align: center
+    }
+
+    th {
+      background: #f7fbff;
+      color: #054
+    }
+
+    tfoot td {
+      font-weight: 800;
+      background: #fbfcff
+    }
+
+    .bar-wrap {
+      background: #eef6ff;
+      height: 14px;
+      border-radius: 6px;
+      overflow: hidden
+    }
+
+    .bar {
+      height: 100%;
+      background: #0b74e1
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- ===== القسم الأول: التعويض ===== -->
+    <div class="card">
+      <h2>⚡ حساب التعويض (Outage)</h2>
+      <div>
+        <h4 class="text-xl font-semibold mb-2"> ايام عميل مش لازم يتعوض عنها</h4>
+        <input type="number" id="customerOutage" placeholder="Enter number Outage" min="0" max="15000" class="w-full px-4 py-2 rounded-lg border border-gray-300 
+                   bg-gray-50 text-gray-900 
+                   dark:bg-gray-800 dark:text-white dark:border-gray-600 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+      </div>
+      <label>اختر الباقة</label>
+      <select id="package">
+        <option value="140">Super 140 GB</option>
+        <option value="200">Super 200 GB</option>
+        <option value="250">Super 250 GB</option>
+        <option value="400">Super 400 GB</option>
+        <option value="600">Super 600 GB</option>
+        <option value="1000">Super 1TB GB</option>
+
+      </select>
+      <label>نوع الأوتج</label>
+      <select id="outageType">
+        <option value="0">Major Fault</option>
+        <option value="1">Data Down</option>
+      </select>
+      <label>وقت البداية</label>
+      <input type="datetime-local" id="outStart" onchange="this.blur()">
+      <label>وقت النهاية</label>
+      <input type="datetime-local" onchange="this.blur()" id="outEnd">
+
+      <label id="choiceLabel">نوع التعويض</label>
+      <select id="compChoice" disabled>
+        <option value="0">جيجات</option>
+        <option value="1">رصيد</option>
+      </select>
+      <div>
+        <h4 class="text-xl font-semibold mb-2"> ايام عميل مش لازم يتعوض عنها</h4>
+        <input disabled type="number" id="customerBalance" placeholder="Enter current balance" min="0" max="15000"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 
+                   bg-gray-50 text-gray-900 
+                   dark:bg-gray-800 dark:text-white dark:border-gray-600 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+      </div>
+      <button class="btn" style="margin-top:10px" onclick="calcOutage()">📌 حساب التعويض</button>
+      <div id="outResult" style="margin-top:14px;font-weight:bold;color:#054;text-align:center"></div>
+
+
+    </div>
+
+    <!-- ===== القسم الثاني: الاستهلاك ===== -->
+    <div class="card">
+      <h2>📊 رفع شيت الاستهلاك وتجميع يومي</h2>
+      <label>اختر ملف Excel (.xls أو .xlsx)</label>
+      <input id="fileInput" type="file" accept=".xls,.xlsx">
+      <div id="usageWrap" style="display:none;margin-top:14px">
+        <table id="usageTable">
+          <thead>
+            <tr>
+              <th>📅 التاريخ</th>
+              <th>الاستهلاك (GB)</th>
+              <th>تمثيل بياني</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td>الإجمالي</td>
+              <td id="totalGB"></td>
+              <td><button class="btn" onclick="exportCSV()">⬇️ تصدير CSV</button></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const balanceInput = document.getElementById('customerBalance');
+
+    let markedDates = new Set();
+
+    function calcOutage() {
+      const balanceDay = parseFloat(balanceInput.value) || 0;
+      const pkg = Number(document.getElementById("package").value);
+      const type = Number(document.getElementById("outageType").value);
+      const s = new Date(document.getElementById("outStart").value);
+      const e = new Date(document.getElementById("outEnd").value);
+      const compChoice = Number(document.getElementById("compChoice").value);
+      const customerBalance = Number(document.getElementById("customerBalance").value);
+      const customerOutage = Number(document.getElementById("customerOutage").value);
+
+
+      if (!s || !e || e <= s) { alert("❌ من فضلك أدخل وقت صحيح"); return; }
+
+      const diffH = (e - s) / 1000 / 3600;   // فرق بالساعات
+      const diffDays = Math.floor(diffH / 24) + (diffH % 24 > 0 ? 1 : 0); // أي دقيقة بعد يوم → يوم كامل
+      const daycon = (diffDays - balanceDay)
+      let compB = 0;
+      let compG = 0, msg = "";
+      let days = Math.ceil(diffH / 24);
+
+      // 👇 لو أكتر من يومين نفعل الاختيار
+      if (days >= 2) {
+        document.getElementById("compChoice").disabled = false;
+        document.getElementById("customerBalance").disabled = false;
+
+
+      } else {
+        document.getElementById("compChoice").disabled = true;
+        document.getElementById("compChoice").value = "gb"; // يرجع افتراضي جيجات
+      }
+
+      if (diffH < 6) {
+        msg = "⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br>";
+      }
+      else if (diffH >= 6 && diffH < 12) {
+        if (pkg === 140) compG = 3;
+        else if (pkg === 200) compG = 5;
+        else if (pkg === 200) compG = 5;
+        else if (pkg === 250) compG = 5;
+        else if (pkg === 400) compG = 10;
+        else if (pkg === 600) compG = 10;
+        else if (pkg === 1000) compG = 10;
+
+        msg = `Outage Id : ${customerOutage} ${diffH} Hours   ${compG} GB <br>`;
+      }
+      else if (diffH >= 12 && diffH <= 24) {
+        if (pkg === 140) compG = 3;
+        else if (pkg === 200) compG = 5;
+        else if (pkg === 200) compG = 5;
+        else if (pkg === 250) compG = 5;
+        else if (pkg === 400) compG = 10;
+        else if (pkg === 600) compG = 10;
+        else if (pkg === 1000) compG = 10;
+        msg = `Outage Id : ${customerOutage} ${diffH} Hours    ${compG} GB Satisfaction:  ${compG} GB <br>`;
+      }
+      else {
+        // أي يوم إضافي يتحسب كامل
+        compG = Math.round((pkg / 30) * daycon);
+        msg = `Outage Id : ${customerOutage} Day ${daycon} GB  → : ${compG.toFixed(2)} GB Satisfaction:  ${compG.toFixed(2)} GB <br>`;
+        if (type === 1 && daycon >= 10 ) {
+          msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
+        }if (type === 0  ) {
+          msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
+        }
+
+      }
+
+      // شروط خاصة بالـ Outage Type
+
+      if (compChoice === 0) {
+        console.log("GB"); // 5
+      }
+      if (compChoice === 1) {
+        if (type === 1  && daycon >= 10) {
+          msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
+        }
+        if (type === 0) {
+          msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
+        }
+
+        compB = calcBalanceComp(daycon, pkg);
+        msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
+      }
+
+      document.getElementById("outResult").innerHTML = msg;
+      highlightRange();
+    }
+
+    // 🟢 فنكشن لحساب التعويض بالرصيد
+    function calcBalanceComp(diffDays, pkg) {
+      let balance = 0;
+      const remainingServiceFee = document.getElementById('outResult');
+      let comp = 0, msg = "";
+      // هنا بتحط معدلاتك:
+      if (pkg === 140) {
+        balance = diffDays * 7;
+      }
+      else if (pkg === 200) {
+        balance = diffDays * 9.67;
+      }
+      else if (pkg === 250) {
+        balance = diffDays * 12;
+
+      } else if (pkg === 400) {
+        balance = diffDays * 19;
+
+      } else if (pkg === 600) {
+        balance = days * 28.33;
+
+      } else if (pkg === 1000) {
+        balance = diffDays * 45.33;
+
+      } else {
+        balance = diffDays * 10;
+      }
+      return balance;
+
+    }
+
+
+
+    /* ---------- Utilities للاستهلاك ---------- */
+    function toNumber(x) { if (x === null || x === undefined) return NaN; return Number(('' + x).toString().replace(/,/g, '').trim()); }
+    function bytesToGB(b) { return Number(b) / Math.pow(1024, 3); }
+    function unitMultiplier(unit) { if (unit === 'bytes') return 1; if (unit === 'kb') return 1024; if (unit === 'mb') return Math.pow(1024, 2); if (unit === 'gb') return Math.pow(1024, 3); return 1; }
+    function localDateKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+    function detectHeader(headers, candidates) {
+      const low = headers.map(h => ('' + h).toLowerCase().trim());
+      for (const c of candidates) {
+        const cc = c.toLowerCase();
+        for (let i = 0; i < low.length; i++) {
+          if (low[i] === cc || low[i].includes(cc) || cc.includes(low[i])) return headers[i];
+        }
+      }
+      for (const c of candidates) {
+        const cc = c.toLowerCase();
+        for (let i = 0; i < low.length; i++) if (low[i].indexOf(cc) !== -1) return headers[i];
+      }
+      return null;
+    }
+    function parseExcelDate(v) {
+      if (v === null || v === undefined || ('' + v).trim() === '') return null;
+      if (Object.prototype.toString.call(v) === '[object Date]') return v;
+      if (typeof v === 'number') {
+        try { const d = XLSX.SSF.parse_date_code(v); if (d) return new Date(d.y, d.m - 1, d.d, d.H || 0, d.M || 0, Math.floor(d.S) || 0); } catch (e) { }
+        const dd = new Date(v); if (!isNaN(dd)) return dd; return null;
+      }
+      if (typeof v === 'string') {
+        let s = v.trim(); s = s.replace(/\//g, '-').replace(/\./g, '-');
+        const m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+        if (m) {
+          const dd = Number(m[1]), mm = Number(m[2]), yy = Number(m[3]);
+          const hh = m[4] ? Number(m[4]) : 0, mi = m[5] ? Number(m[5]) : 0, ss = m[6] ? Number(m[6]) : 0;
+          return new Date(yy, mm - 1, dd, hh, mi, ss);
+        }
+        const p = new Date(s); if (!isNaN(p)) return p;
+      }
+      return null;
+    }
+
+    /* ---------- Usage ---------- */
+    let rawRows = [], headers = [], detectedStart = null, detectedBytes = null;
+    document.getElementById('fileInput').addEventListener('change', async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const data = await f.arrayBuffer();
+      const wb = XLSX.read(data, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      rawRows = rows; headers = rows.length ? Object.keys(rows[0]) : [];
+      const startCands = ['Usage Start Time', 'Start Time', 'Start', 'Timestamp', 'Date', 'Date Time', 'StartTime'];
+      const bytesCands = ['Bytes', 'Usage', 'Usage (Bytes)', 'Total Bytes', 'Bytes Used', 'TotalUsage'];
+      detectedStart = detectHeader(headers, startCands);
+      detectedBytes = detectHeader(headers, bytesCands);
+      if (!detectedStart || !detectedBytes) { alert("تعذر التعرف على الأعمدة تلقائيًا"); return; }
+      aggregate();
+    });
+
+    function aggregate() {
+      const startCol = detectedStart;
+      const bytesCol = detectedBytes;
+      const unit = "bytes";
+      const usageByDay = {};
+      let totalGB = 0;
+      for (const r of rawRows) {
+        const rawStart = r[startCol];
+        const rawEnd = r['End Time'] || r['End'] || r['Usage End Time'] || null;
+        const rawBytes = toNumber(r[bytesCol]);
+        if (isNaN(rawBytes)) continue;
+        const startDT = parseExcelDate(rawStart);
+        const endDT = parseExcelDate(rawEnd) || startDT;
+        if (!startDT) continue;
+        const multiplier = unitMultiplier(unit);
+        const bytes = rawBytes * multiplier;
+        if (endDT <= startDT) {
+          const key = localDateKey(startDT);
+          const gb = bytesToGB(bytes);
+          usageByDay[key] = (usageByDay[key] || 0) + gb;
+          totalGB += gb; continue;
+        }
+        let cur = new Date(startDT);
+        while (cur < endDT) {
+          const nextDay = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 1, 0, 0, 0);
+          const sliceEnd = nextDay < endDT ? nextDay : endDT;
+          const ratio = (sliceEnd - cur) / (endDT - startDT);
+          const gbSlice = bytesToGB(bytes * ratio);
+          const key = localDateKey(cur);
+          usageByDay[key] = (usageByDay[key] || 0) + gbSlice;
+          totalGB += gbSlice;
+          cur = sliceEnd;
+        }
+      }
+      // عرض الجدول
+      const tbody = document.querySelector('#usageTable tbody');
+      tbody.innerHTML = '';
+      const keys = Object.keys(usageByDay).sort();
+      let sum = 0; let maxVal = Math.max(...keys.map(k => usageByDay[k]));
+      for (const k of keys) {
+        const v = usageByDay[k]; sum += v;
+        const tr = document.createElement('tr');
+        const barWidth = maxVal > 0 ? (v / maxVal * 100).toFixed(1) : 0;
+        tr.innerHTML = `<td>${k}</td><td>${v.toFixed(2)}</td><td><div class="bar-wrap"><div class="bar" style="width:${barWidth}%"></div></div></td>`;
+        tbody.appendChild(tr);
+      }
+      document.getElementById('totalGB').textContent = sum.toFixed(2) + ' جيجا';
+      document.getElementById('usageWrap').style.display = keys.length ? 'block' : 'none';
+    }
+
+    function exportCSV() {
+      const rows = []; const tbody = document.querySelector('#usageTable tbody');
+      Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+        const date = tr.children[0].textContent;
+        const gb = tr.children[1].textContent;
+        rows.push([date, gb]);
+      });
+      let csv = 'Date,Usage_GB\n';
+      rows.forEach(r => csv += `${r[0]},${r[1]}\n`);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'usage_daily.csv';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+    function highlightRange() {
+      const start = document.getElementById("outStart").value.slice(0, 10);;
+      const end = document.getElementById("outEnd").value.slice(0, 10);;
+
+      if (!start || !end) {
+        alert("⚠️ اختر تاريخ البداية والنهاية");
+        return;
+      }
+
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      if (endDate < startDate) {
+        alert("⚠️ تاريخ النهاية لازم يكون بعد البداية");
+        return;
+      }
+
+      const rows = document.querySelectorAll("#usageTable tbody tr");
+      rows.forEach(row => {
+        const cellDate = row.children[0].textContent.replace("✅ ", "").trim();
+        const d = new Date(cellDate);
+
+        // رجع الصف عادي
+        row.classList.remove("highlight");
+        row.children[0].textContent = cellDate;
+
+        // لو التاريخ داخل الفترة
+        if (d >= startDate && d <= endDate) {
+          row.classList.add("highlight");
+          row.children[0].textContent = "✅ " + cellDate;
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
