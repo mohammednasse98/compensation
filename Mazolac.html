@@ -262,15 +262,16 @@
         console.log("GB"); // 5
       }
       if (compChoice === 1) {
-        if (type === 1  && daycon >= 10) {
+      
+
+        compB = calcBalanceComp(daycon, pkg);
+        msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
+          if (type === 1  && daycon >= 10) {
           msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
         }
         if (type === 0) {
           msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
         }
-
-        compB = calcBalanceComp(daycon, pkg);
-        msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
       }
 
       document.getElementById("outResult").innerHTML = msg;
@@ -470,3 +471,4 @@
 
 
 </html>
+
