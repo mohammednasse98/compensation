@@ -270,7 +270,9 @@
       }
 
       if (diffH < 6) {
-        msg = "⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br>";
+        react("angry2");
+        msg = `⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br> ${diffH.toFixed(2)}`;
+
       }
       else if (diffH >= 6 && diffH < 12) {
         if (pkg === 140) compG = 3;
@@ -281,6 +283,7 @@
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
         react("like");
+        react("angry1");
         msg = `Outage Id : ${customerOutage}Hours: ( ${diffH.toFixed(2)} )    ${compG} GB <br>`;
       }
       else if (diffH >= 12 && diffH <= 24) {
@@ -292,6 +295,7 @@
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
         react("ok");
+        react("angry1");
         msg = `Outage Id : ${customerOutage}  Hours : (${diffH.toFixed(2)})     ${compG} GB Satisfaction:  ${compG} GB <br>`;
       }
       else {
@@ -563,6 +567,14 @@
         case 'angry':
           img = "https://img.icons8.com/emoji/144/pouting-face.png";
           msg = "😡 عبي تواريخ صح!";
+          break;
+        case 'angry1':
+          img = "https://img.icons8.com/emoji/144/pouting-face.png";
+          msg = "🤬👿 ده تعويض بس يعني!";
+          break;
+          case 'angry2':
+          img = "https://img.icons8.com/emoji/144/pouting-face.png";
+          msg = "🤬 يعني مفيش تعويض !";
           break;
       }
 
