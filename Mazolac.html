@@ -107,51 +107,48 @@
       background: #0b74e1
     }
 
-    /* الطريق */
-    #road {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      background-color: #333;
-    }
-     #road {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 120px;
-      background-color: #333;
-      box-shadow: inset 0 10px 0 #555;
+    .angry {
+      background: #ff4444;
     }
 
-    /* الخط الأبيض المتقطع */
-    #road::after {
-      content: "";
+    .angry:hover {
+      background: #cc0000;
+    }
+
+    /* الروبوت */
+    #robot {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 150px;
+      height: 150px;
+      transition: transform 0.3s, filter 0.3s;
+    }
+
+    /* فقاعة الكلام */
+    #bubble {
+      position: fixed;
+      bottom: 180px;
+      left: 60px;
+      background: #fff;
+      border-radius: 15px;
+      padding: 10px 15px;
+      font-size: 18px;
+      color: #333;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #bubble::after {
+      content: '';
       position: absolute;
-      top: 55px;
-      left: 0;
-      width: 100%;
-      height: 10px;
-      background: repeating-linear-gradient(to right,
-          #fff 0 60px,
-          transparent 60px 120px);
+      bottom: -10px;
+      left: 20px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: #fff transparent transparent transparent;
     }
-
-    /* السيارة */
-    #car {
-      position: fixed;
-      bottom: 30px;
-      /* تم تعديلها عشان تكون على الطريق بالضبط */
-      right: -200px;
-      /* تبدأ من خارج الشاشة */
-      width: 160px;
-      height: auto;
-      z-index: 1000;
-      filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.4));
-    }
-
   </style>
 </head>
 
@@ -234,11 +231,8 @@
     </div>
 
   </div>
-   <div id="road"></div>
-
-  <!-- صورة السيارة -->
-  <img id="car" src="https://cdn-icons-png.flaticon.com/512/744/744465.png" alt="Car">
-
+  <div id="bubble"></div>
+  <img id="robot" src="https://img.icons8.com/emoji/144/robot-emoji.png" alt="روبوت">
   <script>
     const balanceInput = document.getElementById('customerBalance');
 
@@ -255,7 +249,7 @@
       const customerOutage = Number(document.getElementById("customerOutage").value);
 
 
-      if (!s || !e || e <= s) { alert("❌ من فضلك أدخل وقت صحيح"); return; }
+      if (!s || !e || e <= s) { alert("❌ من فضلك أدخل وقت صحيح"); react("angry"); return; }
 
       const diffH = (e - s) / 1000 / 3600;   // فرق بالساعات
       const diffDays = Math.floor(diffH / 24) + (diffH % 24 > 0 ? 1 : 0); // أي دقيقة بعد يوم → يوم كامل
@@ -286,8 +280,8 @@
         else if (pkg === 400) compG = 10;
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
-
-        msg = `Outage Id : ${customerOutage}Hours ${diffH.toFixed(2)}    ${compG} GB <br>`;
+        react("like");
+        msg = `Outage Id : ${customerOutage}Hours: ( ${diffH.toFixed(2)} )    ${compG} GB <br>`;
       }
       else if (diffH >= 12 && diffH <= 24) {
         if (pkg === 140) compG = 3;
@@ -297,7 +291,8 @@
         else if (pkg === 400) compG = 10;
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
-        msg = `Outage Id : ${customerOutage}  Hours ${diffH.toFixed(2)}     ${compG} GB Satisfaction:  ${compG} GB <br>`;
+        react("ok");
+        msg = `Outage Id : ${customerOutage}  Hours : (${diffH.toFixed(2)})     ${compG} GB Satisfaction:  ${compG} GB <br>`;
       }
       else {
         // أي يوم إضافي يتحسب كامل
@@ -309,15 +304,18 @@
           else if (pkg === 400) compG = 10;
           else if (pkg === 600) compG = 10;
           else if (pkg === 1000) compG = 10;
-          msg = `Outage Id : ${customerOutage} ${daycon} Day    ${compG} GB Satisfaction:  ${compG} GB <br>`;
+          react("ok");
+          msg = `Outage Id : ${customerOutage} Day (${daycon})     ${compG} GB Satisfaction:  ${compG} GB <br>`;
           if (type === 1 && daycon >= 10) {
             msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
           } if (type === 0) {
             msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
           }
         } else {
+          react("wink");
+
           compG = Math.round((pkg / 30) * daycon);
-          msg = `Outage Id : ${customerOutage} Day ${daycon} GB  → : ${compG.toFixed(2)} GB Satisfaction:  ${compG.toFixed(2)} GB <br>`;
+          msg = `Outage Id : ${customerOutage} Day (${daycon}) GB  → : ${compG.toFixed(2)} GB Satisfaction:  ${compG.toFixed(2)} GB <br>`;
           if (type === 1 && daycon >= 10) {
             msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
           } if (type === 0) {
@@ -340,6 +338,7 @@
         }
 
         compB = calcBalanceComp(daycon, pkg);
+        react("wink");
         msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
       }
 
@@ -432,7 +431,10 @@
       const bytesCands = ['Bytes', 'Usage', 'Usage (Bytes)', 'Total Bytes', 'Bytes Used', 'TotalUsage'];
       detectedStart = detectHeader(headers, startCands);
       detectedBytes = detectHeader(headers, bytesCands);
-      if (!detectedStart || !detectedBytes) { alert("تعذر التعرف على الأعمدة تلقائيًا"); return; }
+      if (!detectedStart || !detectedBytes) {
+        alert("تعذر التعرف على الأعمدة تلقائيًا"); react("angry");
+        return;
+      }
       aggregate();
     });
 
@@ -508,6 +510,8 @@
 
       if (!start || !end) {
         alert("⚠️ اختر تاريخ البداية والنهاية");
+        react("angry");
+
         return;
       }
 
@@ -516,6 +520,7 @@
 
       if (endDate < startDate) {
         alert("⚠️ تاريخ النهاية لازم يكون بعد البداية");
+        react("angry");
         return;
       }
 
@@ -535,27 +540,45 @@
         }
       });
     }
-    const car = document.getElementById('car');
-    let pos = -200;
-    const speed = 2; // سرعة الحركة
+    const robot = document.getElementById('robot');
+    const bubble = document.getElementById('bubble');
 
-    function moveCar() {
-      pos += speed;
-      car.style.right = pos + 'px';
+    function react(type) {
+      let img = '';
+      let msg = '';
 
-      // لما توصل لنهاية الشمال ترجع من اليمين
-      if (pos > window.innerWidth + 200) pos = -200;
+      switch (type) {
+        case 'like':
+          img = "https://img.icons8.com/emoji/144/robot-emoji.png";
+          msg = " 👍";
+          break;
+        case 'ok':
+          img = "https://img.icons8.com/emoji/144/ok-hand-emoji.png";
+          msg = "تمام 👌";
+          break;
+        case 'wink':
+          img = "https://img.icons8.com/emoji/144/winking-face.png";
+          msg = "عاش 😉";
+          break;
+        case 'angry':
+          img = "https://img.icons8.com/emoji/144/pouting-face.png";
+          msg = "😡 عبي تواريخ صح!";
+          break;
+      }
 
-      requestAnimationFrame(moveCar);
+      robot.src = img;
+      robot.style.transform = "scale(1.1)";
+      if (type === 'angry') robot.style.filter = "hue-rotate(-30deg) brightness(0.9)";
+      else robot.style.filter = "none";
+
+      setTimeout(() => robot.style.transform = "scale(1)", 300);
+
+      bubble.textContent = msg;
+      bubble.style.opacity = 1;
+      setTimeout(() => bubble.style.opacity = 0, 2000);
     }
-
-    moveCar();
 
   </script>
 </body>
 
 </html>
-
-
-
-
