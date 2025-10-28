@@ -3,7 +3,12 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Outage  Compensation</title>
+  <!-- Favicon مضمّن -->
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <text x="50" y="70" font-size="80" font-family="Arial, Helvetica, sans-serif" fill="white" text-anchor="middle" font-weight="700">M</text>
+    </svg>'>
+  <title>Outage</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" type="text/css"
@@ -101,6 +106,61 @@
       height: 100%;
       background: #0b74e1
     }
+    /* الطريق */
+    #road {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 80px;
+      background-color: #333;
+    }
+
+    /* السيارة */
+    #car {
+      position: fixed;
+      bottom: 30px;
+      left: -150px;
+      /* البداية خارج الشاشة */
+      width: 120px;
+      height: auto;
+      z-index: 1000;
+      animation: bounce 0.4s infinite ease-in-out alternate;
+      filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.4));
+    }
+
+    /* اهتزاز خفيف أثناء السير */
+    @keyframes bounce {
+      from {
+        bottom: 30px;
+      }
+
+      to {
+        bottom: 34px;
+      }
+    }
+
+    /* السحب */
+    #clouds {
+      position: fixed;
+      top: 50px;
+      left: 0;
+      width: 200%;
+      height: 100px;
+      background: url('https://i.imgur.com/QZ6WDeK.png') repeat-x;
+      animation: moveClouds 60s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes moveClouds {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
   </style>
 </head>
 
@@ -183,7 +243,11 @@
     </div>
 
   </div>
+  <div id="clouds"></div>
+  <div id="road"></div>
 
+  <!-- أيقونة السيارة الجديدة -->
+  <img id="car" src="https://img.icons8.com/?size=100&id=24085&format=png&color=000000" alt="Car">
   <script>
     const balanceInput = document.getElementById('customerBalance');
 
@@ -232,7 +296,7 @@
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
 
-        msg = `Outage Id : ${customerOutage} ${diffH} Hours   ${compG} GB <br>`;
+        msg = `Outage Id : ${customerOutage}Hours ${diffH.toFixed(2)}    ${compG} GB <br>`;
       }
       else if (diffH >= 12 && diffH <= 24) {
         if (pkg === 140) compG = 3;
@@ -242,18 +306,33 @@
         else if (pkg === 400) compG = 10;
         else if (pkg === 600) compG = 10;
         else if (pkg === 1000) compG = 10;
-        msg = `Outage Id : ${customerOutage} ${diffH} Hours    ${compG} GB Satisfaction:  ${compG} GB <br>`;
+        msg = `Outage Id : ${customerOutage}  Hours ${diffH.toFixed(2)}     ${compG} GB Satisfaction:  ${compG} GB <br>`;
       }
       else {
         // أي يوم إضافي يتحسب كامل
-        compG = Math.round((pkg / 30) * daycon);
-        msg = `Outage Id : ${customerOutage} Day ${daycon} GB  → : ${compG.toFixed(2)} GB Satisfaction:  ${compG.toFixed(2)} GB <br>`;
-        if (type === 1 && daycon >= 10 ) {
-          msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
-        }if (type === 0  ) {
-          msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
+        if (daycon === 1) {
+          if (pkg === 140) compG = 3;
+          else if (pkg === 200) compG = 5;
+          else if (pkg === 200) compG = 5;
+          else if (pkg === 250) compG = 5;
+          else if (pkg === 400) compG = 10;
+          else if (pkg === 600) compG = 10;
+          else if (pkg === 1000) compG = 10;
+          msg = `Outage Id : ${customerOutage} ${daycon} Day    ${compG} GB Satisfaction:  ${compG} GB <br>`;
+          if (type === 1 && daycon >= 10) {
+            msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
+          } if (type === 0) {
+            msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
+          }
+        } else {
+          compG = Math.round((pkg / 30) * daycon);
+          msg = `Outage Id : ${customerOutage} Day ${daycon} GB  → : ${compG.toFixed(2)} GB Satisfaction:  ${compG.toFixed(2)} GB <br>`;
+          if (type === 1 && daycon >= 10) {
+            msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
+          } if (type === 0) {
+            msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
+          }
         }
-
       }
 
       // شروط خاصة بالـ Outage Type
@@ -262,16 +341,15 @@
         console.log("GB"); // 5
       }
       if (compChoice === 1) {
-      
-
-        compB = calcBalanceComp(daycon, pkg);
-        msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
-          if (type === 1  && daycon >= 10) {
+        if (type === 1 && daycon >= 10) {
           msg += "<br>⚠️ Outage Down → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم ..";
         }
         if (type === 0) {
           msg += "<br>⚠️ Outage Major → تابع استهلاك عميل لو اكثر من جيجا في يوم اخصم يوم .";
         }
+
+        compB = calcBalanceComp(daycon, pkg);
+        msg = `Outage Id : ${customerOutage} Day  ${daycon} Balance ${compB}  Satisfaction ${compG} <br>`;
       }
 
       document.getElementById("outResult").innerHTML = msg;
@@ -297,7 +375,7 @@
         balance = diffDays * 19;
 
       } else if (pkg === 600) {
-        balance = diffDays * 28.33;
+        balance = days * 28.33;
 
       } else if (pkg === 1000) {
         balance = diffDays * 45.33;
@@ -466,9 +544,21 @@
         }
       });
     }
+    const car = document.getElementById('car');
+    let pos = -150;
+    const speed = 2;
+
+    function moveCar() {
+      pos += speed;
+      if (pos > window.innerWidth) pos = -150;
+      car.style.left = pos + 'px';
+      requestAnimationFrame(moveCar);
+    }
+
+    moveCar();
+
   </script>
 </body>
-
 
 </html>
 
