@@ -149,6 +149,117 @@
       border-style: solid;
       border-color: #fff transparent transparent transparent;
     }
+
+    #customConfirm {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      /* خلفية شبه مظللة */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    #customConfirm {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      /* خلفية مظللة */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #confirmBox {
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      min-width: 300px;
+      animation: slideDown 0.3s ease;
+    }
+
+    #confirmBox p {
+      font-size: 18px;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    .confirmBtns {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      /* مسافة بين الزرين */
+    }
+
+    .confirmBtns button {
+      flex: 1;
+      /* يجعل الزرين بنفس الحجم */
+      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    /* زر OK */
+    #okBtn {
+      background: linear-gradient(90deg, #ff6a00, #ee0979);
+      color: white;
+      box-shadow: 0 4px 12px rgba(238, 9, 121, 0.4);
+    }
+
+    #okBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(238, 9, 121, 0.6);
+    }
+
+    /* زر Cancel */
+    #cancelBtn {
+      background: #e0e0e0;
+      color: #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #cancelBtn:hover {
+      background: #bdbdbd;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* انيميشن */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-30px);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -199,6 +310,11 @@
 
       </div>
       <button class="btn" style="margin-top:10px" onclick="calcOutage()">📌 حساب التعويض</button>
+      <hr>
+      <div style="text-align:center; margin-top:20px;">
+        <button class="btn angry" onclick="confirmReset()">🧹 إعادة تهيئة الصفحة</button>
+      </div>
+
       <div id="outResult" style="margin-top:14px;font-weight:bold;color:#054;text-align:center"></div>
 
 
@@ -233,6 +349,20 @@
   </div>
   <div id="bubble"></div>
   <img id="robot" src="https://img.icons8.com/emoji/144/robot-emoji.png" alt="روبوت">
+
+  <!-- نافذة تأكيد مخصصة -->
+  <!-- نافذة تأكيد مخصصة -->
+  <div id="customConfirm" style="display:none;">
+    <div id="confirmBox">
+      <p>⚠️ هل أنت متأكد أنك تريد عمل إعادة تهيئة؟ كل البيانات ستُمسح!</p>
+      <div class="confirmBtns">
+        <button id="okBtn">✔️ OK</button>
+        <button id="cancelBtn">✖️ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
   <script>
     const balanceInput = document.getElementById('customerBalance');
 
@@ -572,7 +702,7 @@
           img = "https://img.icons8.com/emoji/144/pouting-face.png";
           msg = "🤬👿 ده تعويض بس يعني!";
           break;
-          case 'angry2':
+        case 'angry2':
           img = "https://img.icons8.com/emoji/144/pouting-face.png";
           msg = "🤬 يعني مفيش تعويض !";
           break;
@@ -589,9 +719,61 @@
       bubble.style.opacity = 1;
       setTimeout(() => bubble.style.opacity = 0, 2000);
     }
+    function confirmReset() {
+      document.getElementById('customConfirm').style.display = 'flex';
+    }
+
+    // زر OK
+    document.getElementById('okBtn').addEventListener('click', () => {
+      resetForm(); // ينفذ الريسيت
+      document.getElementById('customConfirm').style.display = 'none';
+    });
+
+    // زر Cancel
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      document.getElementById('customConfirm').style.display = 'none';
+    });
+
+
+    function resetForm() {
+      // 🧹 تفريغ كل المدخلات
+      document.getElementById("customerOutage").value = "";
+      document.getElementById("package").selectedIndex = 0;
+      document.getElementById("outageType").selectedIndex = 0;
+      document.getElementById("outStart").value = "";
+      document.getElementById("outEnd").value = "";
+      document.getElementById("compChoice").value = "0";
+      document.getElementById("compChoice").disabled = true;
+      document.getElementById("customerBalance").value = "";
+      document.getElementById("customerBalance").disabled = true;
+      document.getElementById("outResult").innerHTML = "";
+
+      // 🧾 مسح وإخفاء الجدول
+      const tbody = document.querySelector("#usageTable tbody");
+      if (tbody) tbody.innerHTML = "";
+      document.getElementById("totalGB").textContent = "";
+      document.getElementById("usageWrap").style.display = "none";
+      document.getElementById("fileInput").value = "";
+
+      // ✅ إزالة أي تظليل في الصفوف
+      const rows = document.querySelectorAll("#usageTable tbody tr");
+      rows.forEach(row => {
+        const cellDate = row.children[0];
+        if (cellDate && cellDate.textContent.startsWith("✅ ")) {
+          cellDate.textContent = cellDate.textContent.replace("✅ ", "");
+        }
+        row.classList.remove("highlight");
+      });
+
+      // 🤖 إعادة شكل الروبوت للوضع الافتراضي
+      robot.src = "https://img.icons8.com/emoji/144/robot-emoji.png";
+      bubble.textContent = "تمت التهيئة من جديد 🔁";
+      bubble.style.opacity = 1;
+      setTimeout(() => bubble.style.opacity = 0, 2000);
+    }
+
 
   </script>
 </body>
 
 </html>
-
