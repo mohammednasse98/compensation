@@ -289,6 +289,7 @@
       <select id="outageType">
         <option value="0">Major Fault</option>
         <option value="1">Data Down</option>
+        <option value="2">Physical Instability</option>
       </select>
       <label>وقت البداية</label>
       <input type="datetime-local" id="outStart" onchange="this.blur()">
@@ -312,7 +313,7 @@
       <button class="btn" style="margin-top:10px" onclick="calcOutage()">📌 حساب التعويض</button>
       <hr>
       <div style="text-align:center; margin-top:20px;">
-        <button class="btn angry" onclick="confirmReset()">🧹 إعادة  الصفحة</button>
+        <button class="btn angry" onclick="confirmReset()">🧹 إعادة الصفحة</button>
       </div>
 
       <div id="outResult" style="margin-top:14px;font-weight:bold;color:#054;text-align:center"></div>
@@ -639,13 +640,13 @@
       document.body.removeChild(a); URL.revokeObjectURL(url);
     }
     function highlightRange() {
-      const start = document.getElementById("outStart").value.slice(0, 10);;
-      const end = document.getElementById("outEnd").value.slice(0, 10);;
+      const start = document.getElementById("outStart").value.slice(0, 10);
+      const end = document.getElementById("outEnd").value.slice(0, 10);
+      const type = Number(document.getElementById("outageType").value); // 0=Major, 1=Down, 2=Physical Instability
 
       if (!start || !end) {
         alert("⚠️ اختر تاريخ البداية والنهاية");
         react("angry");
-
         return;
       }
 
@@ -658,22 +659,62 @@
         return;
       }
 
-      const rows = document.querySelectorAll("#usageTable tbody tr");
+      const rows = Array.from(document.querySelectorAll("#usageTable tbody tr"));
+      let exceedDates = []; // الأيام اللي تجاوزت الحد
+
       rows.forEach(row => {
         const cellDate = row.children[0].textContent.replace("✅ ", "").trim();
+        const usage = parseFloat(row.children[1].textContent);
         const d = new Date(cellDate);
 
-        // رجع الصف عادي
+        // إزالة أي تظليل قديم
         row.classList.remove("highlight");
+        row.style.backgroundColor = "";
         row.children[0].textContent = cellDate;
 
-        // لو التاريخ داخل الفترة
         if (d >= startDate && d <= endDate) {
-          row.classList.add("highlight");
           row.children[0].textContent = "✅ " + cellDate;
+
+          if ((type === 1 && usage > 1) || // Down
+            (type === 0 && usage > 1) || // Major
+            (type === 2 && usage > 5)) { // Physical
+            exceedDates.push({ date: cellDate, usage });
+          }
         }
       });
+
+      let deductDates = [];
+
+      if (type === 1) { // Down
+        // خصم الأيام بعد اليوم العاشر فقط
+        if (exceedDates.length > 10) {
+          deductDates = exceedDates.slice(10); // الأيام من 11 فصاعدًا
+        }
+      } else if (type === 0) { // Major
+        deductDates = exceedDates; // كل الأيام تتخصم
+      } else if (type === 2) { // Physical
+        deductDates = exceedDates; // كل الأيام تتخصم
+      }
+
+      // تلوين الصفوف المخصومة بالأحمر
+      rows.forEach(row => {
+        const cellDate = row.children[0].textContent.replace("✅ ", "").trim();
+        if (deductDates.some(d => d.date === cellDate)) {
+          row.style.backgroundColor = "#ffcccc"; // أحمر
+        }
+      });
+
+      // عرض عدد الأيام المخصومة والتواريخ
+      const deductDiv = document.getElementById("deductDays");
+      if (deductDates.length > 0) {
+        const datesList = deductDates.map(d => d.date).join(", ");
+        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${deductDates.length} يوم${deductDates.length > 1 ? '' : ''}`;
+      } else {
+        deductDiv.innerHTML = "";
+      }
     }
+
+
     const robot = document.getElementById('robot');
     const bubble = document.getElementById('bubble');
 
@@ -777,4 +818,3 @@
 </body>
 
 </html>
-
