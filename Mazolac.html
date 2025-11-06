@@ -706,7 +706,7 @@
 
       const deductDiv = document.getElementById("deductDays");
       if (showDeduct > 0) {
-        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${showDeduct} يوم${showDeduct > 1 ? 's' : ''}`;
+        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${showDeduct} يوم${showDeduct > 1 ? '' : ''}`;
       } else {
         deductDiv.innerHTML = "";
       }
@@ -817,5 +817,6 @@
 </body>
 
 </html>
+
 
 
