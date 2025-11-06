@@ -416,7 +416,7 @@
         else if (pkg === 1000) compG = 10;
         react("like");
         react("angry1");
-        msg = `Outage Id : ${customerOutage}Hours: ( ${diffH.toFixed(2)} )    ${compG} GB <br>`;
+        msg = `Outage Id : ${customerOutage} Hours : ( ${diffH.toFixed(2)} )    ${compG} GB <br>`;
       }
       else if (diffH >= 12 && diffH <= 24) {
         if (pkg === 140) compG = 3;
@@ -706,7 +706,7 @@
 
       const deductDiv = document.getElementById("deductDays");
       if (showDeduct > 0) {
-        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${showDeduct} يوم${showDeduct > 1 ? '' : ''}`;
+        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها : ${showDeduct} يوم${showDeduct > 1 ? '' : ''}`;
       } else {
         deductDiv.innerHTML = "";
       }
@@ -817,6 +817,7 @@
 </body>
 
 </html>
+
 
 
 
