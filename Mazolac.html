@@ -260,10 +260,40 @@
         transform: translateY(0);
       }
     }
+
+    #mazola {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(30, 136, 229, 0.8);
+      color: #fff;
+      font-weight: bold;
+      font-size: 20px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      font-family: "Cairo", Arial, sans-serif;
+      pointer-events: none;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div id="mazola">Mazola 😎🎶</div>
   <div class="wrap">
     <!-- ===== القسم الأول: التعويض ===== -->
     <div class="card">
@@ -400,10 +430,10 @@
         document.getElementById("compChoice").disabled = true;
         document.getElementById("compChoice").value = "gb"; // يرجع افتراضي جيجات
       }
-const totalMs = e - s;
+      const totalMs = e - s;
       const hours = Math.floor(totalMs / (1000 * 60 * 60)); // عدد الساعات الكاملة
       const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
-      
+
       if (diffH < 6) {
         react("angry2");
         msg = `⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br> Hours: ${hours} :${minutes}`;
@@ -643,7 +673,7 @@ const totalMs = e - s;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
     }
-     function highlightRange(diffDays) {
+    function highlightRange(diffDays) {
       const start = document.getElementById("outStart").value.slice(0, 10);
       const end = document.getElementById("outEnd").value.slice(0, 10);
       const type = Number(document.getElementById("outageType").value); // 0=Major, 1=Down, 2=Physical Instability
@@ -820,10 +850,3 @@ const totalMs = e - s;
 </body>
 
 </html>
-
-
-
-
-
-
-
