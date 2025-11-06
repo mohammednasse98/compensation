@@ -400,10 +400,13 @@
         document.getElementById("compChoice").disabled = true;
         document.getElementById("compChoice").value = "gb"; // يرجع افتراضي جيجات
       }
-
+const totalMs = e - s;
+      const hours = Math.floor(totalMs / (1000 * 60 * 60)); // عدد الساعات الكاملة
+      const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+      
       if (diffH < 6) {
         react("angry2");
-        msg = `⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br> ${diffH.toFixed(2)}`;
+        msg = `⛔ المدة أقل من 6 ساعات → لا يوجد تعويض. <br>Hours: ( ${hours} )+ Minutes:( ${minutes} )`;
 
       }
       else if (diffH >= 6 && diffH < 12) {
@@ -416,7 +419,7 @@
         else if (pkg === 1000) compG = 10;
         react("like");
         react("angry1");
-        msg = `Outage Id : ${customerOutage} Hours : ( ${diffH.toFixed(2)} )    ${compG} GB <br>`;
+        msg = `Outage Id : ${customerOutage} Hours: ( ${hours} )+ Minutes:( ${minutes} )    ${compG} GB <br>`;
       }
       else if (diffH >= 12 && diffH <= 24) {
         if (pkg === 140) compG = 3;
@@ -817,6 +820,7 @@
 </body>
 
 </html>
+
 
 
 
