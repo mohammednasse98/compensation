@@ -479,7 +479,7 @@
       }
 
       document.getElementById("outResult").innerHTML = msg;
-      highlightRange();
+      highlightRange(diffDays);
     }
 
     // 🟢 فنكشن لحساب التعويض بالرصيد
@@ -640,7 +640,7 @@
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
     }
-    function highlightRange() {
+     function highlightRange(diffDays) {
       const start = document.getElementById("outStart").value.slice(0, 10);
       const end = document.getElementById("outEnd").value.slice(0, 10);
       const type = Number(document.getElementById("outageType").value); // 0=Major, 1=Down, 2=Physical Instability
@@ -660,12 +660,12 @@
         return;
       }
 
-      const rows = Array.from(document.querySelectorAll("#usageTable tbody tr"));
-      let exceedDates = []; // الأيام اللي تجاوزت الحد
+      const rows = document.querySelectorAll("#usageTable tbody tr");
+      let deductCount = 0; // عدد الأيام التي تجاوزت الحد
 
       rows.forEach(row => {
         const cellDate = row.children[0].textContent.replace("✅ ", "").trim();
-        const usage = parseFloat(row.children[1].textContent);
+        const usage = parseFloat(row.children[1].textContent); // قيمة الاستهلاك بالجيجا
         const d = new Date(cellDate);
 
         // إزالة أي تظليل قديم
@@ -673,47 +673,45 @@
         row.style.backgroundColor = "";
         row.children[0].textContent = cellDate;
 
+        // لو التاريخ داخل الفترة
         if (d >= startDate && d <= endDate) {
           row.children[0].textContent = "✅ " + cellDate;
 
-          if ((type === 1 && usage > 1) || // Down
-            (type === 0 && usage > 1) || // Major
-            (type === 2 && usage > 5)) { // Physical
-            exceedDates.push({ date: cellDate, usage });
+          let exceed = false;
+          console.log(diffDays);
+          if (type === 1 && usage > 1 && diffDays >= 10) { // Down
+            exceed = true;
+          } else if (type === 0 && usage > 1) { // Major
+            exceed = true;
+          } else if (type === 2 && usage > 5) { // Physical Instability
+            exceed = true;
+          }
+
+          if (exceed) {
+            row.style.backgroundColor = "#ffcccc"; // أحمر
+            deductCount++;
           }
         }
       });
 
-      let deductDates = [];
-
-      if (type === 1) { // Down
-        // خصم الأيام بعد اليوم العاشر فقط
-        if (exceedDates.length > 10) {
-          deductDates = exceedDates.slice(10); // الأيام من 11 فصاعدًا
-        }
-      } else if (type === 0) { // Major
-        deductDates = exceedDates; // كل الأيام تتخصم
+      // حساب الأيام المستحقة للخصم بدقة
+      let showDeduct = 0;
+      if (type === 1 && diffDays > 10) { // Down
+        showDeduct = deductCount;
+      } else if (type === 0 && deductCount > 1) { // Major
+        showDeduct = deductCount; // خصم اليوم الأول
       } else if (type === 2) { // Physical
-        deductDates = exceedDates; // كل الأيام تتخصم
+        showDeduct = deductCount;
       }
 
-      // تلوين الصفوف المخصومة بالأحمر
-      rows.forEach(row => {
-        const cellDate = row.children[0].textContent.replace("✅ ", "").trim();
-        if (deductDates.some(d => d.date === cellDate)) {
-          row.style.backgroundColor = "#ffcccc"; // أحمر
-        }
-      });
-
-      // عرض عدد الأيام المخصومة والتواريخ
       const deductDiv = document.getElementById("deductDays");
-      if (deductDates.length > 0) {
-        const datesList = deductDates.map(d => d.date).join(", ");
-        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${deductDates.length} يوم${deductDates.length > 1 ? '' : ''}`;
+      if (showDeduct > 0) {
+        deductDiv.innerHTML = `⚠️ عدد الأيام التي يجب خصمها: ${showDeduct} يوم${showDeduct > 1 ? 's' : ''}`;
       } else {
         deductDiv.innerHTML = "";
       }
     }
+
 
 
     const robot = document.getElementById('robot');
@@ -819,4 +817,5 @@
 </body>
 
 </html>
+
 
